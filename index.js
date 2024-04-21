@@ -43,7 +43,8 @@ async function run() {
         if(err){
           return  res.status(401).send({message: "Your Are not Authorized"})
         }
-        console.log(decoded);
+        req.user = decoded
+        next();
       })
     }
 
@@ -56,7 +57,17 @@ async function run() {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
       res.send(result)
-    })
+    });
+
+
+    app.post("/api/v1/user/booking", verify, async(req, res) => {
+      const queryEmail = req.query.email;
+      const tokenEmail = req.user.email;
+      if(queryEmail === tokenEmail){
+        const result = await bookingCollection.findOne({email: queryEmail});
+        res.send(result)
+      }
+    });
 
     app.post("/api/v1/access-token", (req, res) => {
       const user = req.body;
